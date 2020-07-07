@@ -9,48 +9,45 @@ import {
   Query,
   UsePipes,
   ValidationPipe,
+  ParseIntPipe,
 } from '@nestjs/common';
 import { TasksService } from './tasks.service';
-import { Task, TaskStatus } from './task.model';
+import { Task } from './models/task.entity';
 import { CreateTaskDto } from './dto/create-task.dto';
 import { GetTasksFilterDto } from './dto/get-tasks-filter.dto';
 import { TaskStatusValidationPipe } from './pipes/task-status-validation.pipe';
+import { TaskStatus } from './task-status.enum';
 
 @Controller('tasks')
 export class TasksController {
-  constructor(private tasksService: TasksService) {}
+  constructor(private taskService: TasksService) {}
 
   @Get()
-  getTasks(@Query(ValidationPipe) filterDto: GetTasksFilterDto): Task[] {
-    if (Object.keys(filterDto).length) {
-      return this.tasksService.getTasksWithFilters(filterDto);
-    } else {
-      return this.tasksService.getAllTasks();
-    }
+  getTasks(@Query(ValidationPipe) filterDto: GetTasksFilterDto): any {
+    return this.taskService.getTasks(filterDto);
   }
 
   @Get('/:id')
-  getTaskById(@Param('id') id: string): Task {
-    // Si no se utiliza 'id' dentro de param entonces se recibe como un objeto
-    return this.tasksService.getTaskById(id);
+  getTaskById(@Param('id', ParseIntPipe) id: number): Promise<Task> {
+    return this.taskService.getTaskById(id);
   }
 
   @Post()
   @UsePipes(ValidationPipe)
-  CreateTask(@Body() createTasktDTO: CreateTaskDto): Task {
-    return this.tasksService.createTask(createTasktDTO);
+  createTask(@Body() task: CreateTaskDto): Promise<Task> {
+    return this.taskService.createTask(task);
   }
 
   @Delete('/:id')
-  DeleteTask(@Param('id') id: string): void {
-    this.tasksService.DeleteTask(id);
+  deleteTask(@Param('id', ParseIntPipe) id: number): Promise<Task> {
+    return this.taskService.deleteTask(id);
   }
 
   @Patch('/:id')
-  UpdateTask(
-    @Param('id') id: string,
+  updateTaskStatus(
+    @Param('id', ParseIntPipe) id: number,
     @Body('status', TaskStatusValidationPipe) status: TaskStatus,
-  ): Task {
-    return this.tasksService.UpdateTask(id, status);
+  ): Promise<Task> {
+    return this.taskService.updateTaskStatus(id, status);
   }
 }
