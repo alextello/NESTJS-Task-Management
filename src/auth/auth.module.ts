@@ -6,6 +6,7 @@ import { AuthService } from './auth.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { UserRepository } from './user.repository';
 import { JwtStrategy } from './jwt.strategy';
+import '../lib/env';
 
 @Module({
   imports: [
